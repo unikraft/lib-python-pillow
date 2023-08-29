@@ -1,0 +1,4 @@
+config LIBPYTHON_PILLOW
+    bool "Pillow - Python Imaging Library"
+    default n
+    select LIBPYTHON3

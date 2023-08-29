@@ -1,0 +1,44 @@
+From 9b08182b2453d2283cad7361e9f4220e9b1c2976 Mon Sep 17 00:00:00 2001
+From: Andrei Tatar <andrei@unikraft.io>
+Date: Fri, 25 Aug 2023 15:25:21 +0200
+Subject: [PATCH 2/2] Fix assumption of malloc(0) != NULL
+
+This patch fixes allocation code that fails when malloc(0) == NULL,
+which is explicitly permitted by the standard, by only attempting to
+allocate nonzero sizes or not erroring when the requested size is 0.
+
+Signed-off-by: Andrei Tatar <andrei@unikraft.io>
+---
+ src/libImaging/Draw.c    | 2 +-
+ src/libImaging/Storage.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/libImaging/Draw.c b/src/libImaging/Draw.c
+index 82f290bd0..48108d7b4 100644
+--- a/src/libImaging/Draw.c
++++ b/src/libImaging/Draw.c
+@@ -478,7 +478,7 @@ polygon_generic(Imaging im, int n, Edge *e, int ink, int eofill, hline_handler h
+     /* Process the edge table with a scan line searching for intersections */
+     /* malloc check ok, using calloc */
+     xx = calloc(edge_count * 2, sizeof(float));
+-    if (!xx) {
++    if (!xx && edge_count) {
+         free(edge_table);
+         return -1;
+     }
+diff --git a/src/libImaging/Storage.c b/src/libImaging/Storage.c
+index 128595f65..e539bf4c0 100644
+--- a/src/libImaging/Storage.c
++++ b/src/libImaging/Storage.c
+@@ -286,7 +286,7 @@ ImagingMemorySetBlocksMax(ImagingMemoryArena arena, int blocks_max) {
+             return 0;
+         }
+         arena->blocks_pool = p;
+-    } else {
++    } else if (blocks_max) {
+         arena->blocks_pool = calloc(sizeof(*arena->blocks_pool), blocks_max);
+         if (!arena->blocks_pool) {
+             return 0;
+-- 
+2.41.0
+

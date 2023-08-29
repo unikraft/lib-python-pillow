@@ -1,0 +1,40 @@
+From 6b66240778d89cb916a90c8c1de2f20cfc1d5176 Mon Sep 17 00:00:00 2001
+From: Andrei Tatar <andrei@unikraft.io>
+Date: Thu, 24 Aug 2023 18:48:54 +0200
+Subject: [PATCH] Replace duplicate definitions with declarations
+
+The Pillow codebase contained duplicate definitions of functions in
+compilation units. These units were never intended to be linked together
+in the upstream build but do get linked in Unikraft resulting in errors.
+This patch replaces one of the duplicate definitions with a declaration.
+
+Signed-off-by: Andrei Tatar <andrei@unikraft.io>
+---
+ src/_webp.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/src/_webp.c b/src/_webp.c
+index fe63027fb..b2ab26236 100644
+--- a/src/_webp.c
++++ b/src/_webp.c
+@@ -21,15 +21,9 @@
+ 
+ #endif
+ 
+-void
+-ImagingSectionEnter(ImagingSectionCookie *cookie) {
+-    *cookie = (PyThreadState *)PyEval_SaveThread();
+-}
++void ImagingSectionEnter(ImagingSectionCookie *cookie);
+ 
+-void
+-ImagingSectionLeave(ImagingSectionCookie *cookie) {
+-    PyEval_RestoreThread((PyThreadState *)*cookie);
+-}
++void ImagingSectionLeave(ImagingSectionCookie *cookie);
+ 
+ /* -------------------------------------------------------------------- */
+ /* WebP Muxer Error Handling                                            */
+-- 
+2.41.0
+

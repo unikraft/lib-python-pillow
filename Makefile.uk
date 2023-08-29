@@ -1,0 +1,190 @@
+#  Pillow Makefile.uk
+#
+#  Authors: Andrei Tatar <andrei@unikraft.io>
+#
+#  Copyright (c) 2023, Unikraft GmbH and The Unikraft Authors.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions
+#  are met:
+#
+#  1. Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#  3. Neither the name of the copyright holder nor the names of its
+#     contributors may be used to endorse or promote products derived from
+#     this software without specific prior written permission.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#  POSSIBILITY OF SUCH DAMAGE.
+#
+
+################################################################################
+# Library registration
+##############################################################################
+$(eval $(call addlib_s,libpython_pillow,$(CONFIG_LIBPYTHON_PILLOW)))
+
+################################################################################
+# Sources
+##############################################################################
+LIBPYTHON_PILLOW_VERSION=10.0.0
+LIBPYTHON_PILLOW_URL=https://github.com/python-pillow/Pillow/archive/refs/tags/$(LIBPYTHON_PILLOW_VERSION).tar.gz
+LIBPYTHON_PILLOW_DIRNAME=Pillow-$(LIBPYTHON_PILLOW_VERSION)
+LIBPYTHON_PILLOW_PATCHDIR=$(LIBPYTHON_PILLOW_BASE)/patches
+$(eval $(call fetch,libpython_pillow,$(LIBPYTHON_PILLOW_URL)))
+$(eval $(call patch,libpython_pillow,$(LIBPYTHON_PILLOW_PATCHDIR),$(LIBPYTHON_PILLOW_DIRNAME)))
+
+################################################################################
+# Helpers
+##############################################################################
+LIBPYTHON_PILLOW_SRC = $(LIBPYTHON_PILLOW_ORIGIN)/$(LIBPYTHON_PILLOW_DIRNAME)
+
+################################################################################
+# Library includes
+##############################################################################
+
+################################################################################
+# Global flags
+##############################################################################
+LIBPYTHON_PILLOW_CFLAGS-y += -fexceptions
+LIBPYTHON_PILLOW_CFLAGS-y += -fasynchronous-unwind-tables
+LIBPYTHON_PILLOW_CFLAGS-y += -fwrapv
+
+LIBPYTHON_PILLOW_CFLAGS-y += -DPILLOW_VERSION=\"$(LIBPYTHON_PILLOW_VERSION)\"
+LIBPYTHON_PILLOW_CFLAGS-y += -DDYNAMIC_ANNOTATIONS_ENABLED=1
+LIBPYTHON_PILLOW_CFLAGS-y += -D_GNU_SOURCE
+
+LIBPYTHON_PILLOW_CFLAGS-$(CONFIG_LIBJPEG) += -DHAVE_LIBJPEG
+LIBPYTHON_PILLOW_CFLAGS-$(CONFIG_LIBOPENJPEG) += -DHAVE_OPENJPEG
+LIBPYTHON_PILLOW_CFLAGS-$(CONFIG_LIBZLIB) += -DHAVE_LIBZ
+LIBPYTHON_PILLOW_CFLAGS-$(CONFIG_LIBTIFF) += -DHAVE_LIBTIFF
+LIBPYTHON_PILLOW_CFLAGS-$(CONFIG_LIBRAQM) += -DHAVE_RAQM -DHAVE_RAQM_SYSTEM
+LIBPYTHON_PILLOW_CFLAGS-$(CONFIG_LIBWEBP_MUX) += -DHAVE_WEBPMUX
+
+LIBPYTHON_PILLOW_CFLAGS-y += -Werror=format-security
+LIBPYTHON_PILLOW_CFLAGS-y += -Wsign-compare
+
+LIBPYTHON_PILLOW_CFLAGS-y += -Wno-missing-field-initializers
+LIBPYTHON_PILLOW_CFLAGS-y += -Wno-implicit-fallthrough
+LIBPYTHON_PILLOW_CFLAGS-y += -Wno-cast-function-type
+LIBPYTHON_PILLOW_CFLAGS-$(call have_gcc) += -Wno-old-style-declaration
+
+################################################################################
+# Library sources
+##############################################################################
+LIBPYTHON_PILLOW_SRCS-$(CONFIG_LIBLITTLECMS) += $(LIBPYTHON_PILLOW_SRC)/src/_imagingcms.c
+LIBPYTHON_PILLOW_SRCS-$(CONFIG_LIBWEBP) += $(LIBPYTHON_PILLOW_SRC)/src/_webp.c
+LIBPYTHON_PILLOW_SRCS-$(CONFIG_LIBFREETYPE) += $(LIBPYTHON_PILLOW_SRC)/src/_imagingft.c
+
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/_imaging.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/Tk/tkImaging.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/_imagingmath.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/_imagingmorph.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/decode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/_imagingtk.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/display.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/encode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Access.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/AlphaComposite.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Bands.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/BcnDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/BitDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Blend.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/BoxBlur.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Chops.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/ColorLUT.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Convert.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/ConvertYCbCr.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Copy.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Crop.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Dib.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Draw.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Effects.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/EpsEncode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/File.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Fill.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Filter.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/FliDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Geometry.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/GetBBox.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/GifDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/GifEncode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/HexDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Histo.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Jpeg2KDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Jpeg2KEncode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/JpegDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/JpegEncode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Matrix.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/ModeFilter.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Negative.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Offset.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Pack.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/PackDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Palette.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Paste.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/PcdDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/PcxDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/PcxEncode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Point.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Quant.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/QuantHash.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/QuantHeap.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/QuantOctree.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/QuantPngQuant.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/RankFilter.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/RawDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/RawEncode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Reduce.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Resample.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/SgiRleDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Storage.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/SunRleDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/TgaRleDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/TgaRleEncode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/TiffDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/Unpack.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/UnpackYCC.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/UnsharpMask.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/XbmDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/XbmEncode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/ZipDecode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/ZipEncode.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/libImaging/codec_fd.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/map.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/outline.c
+LIBPYTHON_PILLOW_SRCS-y += $(LIBPYTHON_PILLOW_SRC)/src/path.c
+
+
+################################################################################
+# Root filesystem
+##############################################################################
+
+ifeq ($(CONFIG_LIBPYTHON_PILLOW),y)
+# Install into main python rootfs & cleanup non-python files
+$(PYTHON_ROOTFS)/.pillow_done: $(PYTHON_ROOTFS)/.keep
+	. $(PYTHON_ROOTFS)/bin/activate && cd $(LIBPYTHON_PILLOW_SRC) && pip install . --prefix=$(PYTHON_ROOTFS) --no-compile
+	_dir=`find "$(PYTHON_ROOTFS)" -maxdepth 4 -type d -name PIL`; \
+	find "$$_dir" -type f -name '*.so' -delete; \
+	find "$$_dir" -type d -name '__pycache__' | xargs rm -rf; \
+	find "$$_dir" -type f | grep -v '\.py$$' | tr "\n" "\0" | xargs -0 rm; \
+	find "$(LIBPYTHON_PILLOW_BASE)/importfix/PIL" -mindepth 1 -maxdepth 1 | xargs $(CP) -rp -t "$$_dir"; \
+	test `basename $$(dirname $$_dir) | cut -d. -f1,2` != $(LIBPYTHON3_VERSION) && \
+		mv "$$_dir" "$(PYTHON_ROOTFS)/lib/python$(LIBPYTHON3_VERSION)/PIL"
+	touch $@
+
+# Add Pillow rootfs to main python
+python-rootfs: $(PYTHON_ROOTFS)/.pillow_done
+
+endif
